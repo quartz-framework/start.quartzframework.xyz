@@ -1,3 +1,5 @@
+'use client'
+
 import {InputHTMLAttributes} from "react";
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {

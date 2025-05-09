@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/pages/components/Button'
-import { Card } from '@/pages/components/Card'
+import { Button } from '@/components/Button'
+import { Card } from '@/components/Card'
 import { Dependency, JavaVersion, Platform, PlatformName, Compiler, QuartzVersion } from '@/globals'
-import { CardContent } from "@/pages/components/CardContent";
-import { Input } from "@/pages/components/Input";
-import { Label } from "@/pages/components/Label";
-import { Separator } from "@/pages/components/Separator";
-import { Layout } from "@/pages/components/Layout";
+import { CardContent } from "@/components/CardContent";
+import { Input } from "@/components/Input";
+import { Label } from "@/components/Label";
+import { Separator } from "@/components/Separator";
+import { Layout } from "@/components/Layout";
 
 function toMainClass(groupId: string, artifactId: string, name: string): string {
   const sanitizedArtifact = artifactId.replace(/[^a-zA-Z0-9]/g, '')

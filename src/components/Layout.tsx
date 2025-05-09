@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
-import {Logo} from "@/pages/components/Logo";
+import {Logo} from "@/components/Logo";
 
 function GitHubIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -39,7 +39,7 @@ function Header() {
       )}
     >
       <div className="relative flex grow basis-0 items-center">
-        <Link href="/" aria-label="Home page">
+        <Link href="/public" aria-label="Home page">
           <Logo className="h-9 w-auto scale-y-[-1] fill-slate-700 block dark:fill-sky-100" />
         </Link>
       </div>

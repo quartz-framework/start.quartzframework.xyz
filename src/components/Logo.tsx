@@ -1,3 +1,5 @@
+'use client'
+
 function LogomarkPaths() {
   return (
     <g transform="scale(0.0035)" fill="currentColor">
