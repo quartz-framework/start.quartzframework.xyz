@@ -19,13 +19,22 @@ export enum PlatformYaml {
     BUNGEE = 'bungee.yml',
 }
 
+export enum PlatformStarter {
+    SPIGOT = 'SpigotPlugin',
+    BUNGEE = 'BungeePlugin',
+}
+
 export enum Dependency {
-    LOMBOK = 'lombok',
+    LOMBOK = 'LOMBOK',
+}
+
+export enum DependencyName {
+    LOMBOK = 'Lombok',
 }
 
 export enum Compiler {
     MAVEN = 'MAVEN',
-    GRADLE = 'GRADLE',
+    //GRADLE = 'GRADLE',
 }
 
 export enum CompilerName {
@@ -37,6 +46,37 @@ export enum QuartzVersion {
     "0.0.1-SNAPSHOT" = '0.0.1-SNAPSHOT',
 }
 
-export enum QuartzVersionSnapshot {
-    "0.0.1-SNAPSHOT" = 'true',
+export const MavenDependency: Record<Dependency, { groupId: string; artifactId: string }> = {
+    [Dependency.LOMBOK]: { groupId: 'org.projectlombok', artifactId: 'lombok' },
+};
+
+export enum DependencyHelpLink {
+    LOMBOK = 'https://projectlombok.org'
 }
+
+export const PlatformApiDependency: Record<Platform, { groupId: string; artifactId: string }> = {
+    [Platform.SPIGOT]: { groupId: 'org.spigotmc', artifactId: 'spigot-api' },
+    [Platform.BUNGEE]: { groupId: 'net.md-5', artifactId: 'bungeecord-api' },
+};
+
+export const SupportedApiVersions: Record<Platform, string[]> = {
+    [Platform.SPIGOT]: [
+        '1.21.4-R0.1-SNAPSHOT',
+        '1.21.3-R0.1-SNAPSHOT',
+        '1.21.2-R0.1-SNAPSHOT',
+        '1.21.1-R0.1-SNAPSHOT',
+        '1.21-R0.1-SNAPSHOT',
+        '1.20.6-R0.1-SNAPSHOT',
+        '1.20.4-R0.1-SNAPSHOT',
+        '1.20.3-R0.1-SNAPSHOT',
+        '1.20.2-R0.1-SNAPSHOT',
+        '1.20.1-R0.1-SNAPSHOT',
+        '1.19.4-R0.1-SNAPSHOT',
+        '1.18.2-R0.1-SNAPSHOT',
+    ],
+    [Platform.BUNGEE]: [
+        '1.17-R0.1-SNAPSHOT',
+        '1.18-R0.1-SNAPSHOT',
+        '1.19-R0.1-SNAPSHOT',
+    ],
+};

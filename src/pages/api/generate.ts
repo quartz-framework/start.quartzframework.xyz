@@ -1,159 +1,72 @@
-// pages/api/generate.ts
-import { NextRequest, NextResponse } from 'next/server'
-import JSZip from 'jszip'
-import { PlatformYaml, Compiler, Platform } from '@/globals'
+import {NextApiRequest, NextApiResponse} from 'next';
+import JSZip from 'jszip';
+import {Platform, PlatformApiDependency, PlatformYaml,} from '@/globals';
+import {
+  gitAttributes,
+  gitIgnore,
+  mainClassContent,
+  mavenWrapperProperties,
+  mavenXml,
+  mvnw,
+  mvnwCMD,
+  pingCommandContent,
+  pluginYaml,
+  readme
+} from "@/files";
 
-export async function POST(req: NextRequest) {
-  const body = await req.json()
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const {
+      groupId,
+      artifactId,
+      name,
+      mainClass,
+      javaVersion,
+      platform,
+      compiler,
+      version,
+      dependencies,
+      platformApiVersion,
+    } = req.body;
 
-  const {
-    groupId,
-    artifactId,
-    name,
-    mainClass,
-    javaVersion,
-    platform,
-    compiler,
-    version,
-    dependencies,
-  } = body
-
-  const isSnapshot = version.endsWith('-SNAPSHOT')
-  const zip = new JSZip()
-  const basePath = `${artifactId}/`
-  const pluginYamlName = PlatformYaml[platform as Platform] || 'plugin.yml'
-
-  const dependencyXml = dependencies.map(
-      (dep: string) => `    <dependency>
-      <groupId>xyz.quartzframework</groupId>
-      <artifactId>${dep}</artifactId>
-    </dependency>`
-  ).join('\n')
-
-  const mavenXml = `<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>xyz.quartzframework</groupId>
-    <artifactId>quartz-parent</artifactId>
-    <version>${version}</version>
-    <relativePath/>
-  </parent>
-  <groupId>${groupId}</groupId>
-  <artifactId>${artifactId}</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <properties>
-    <java.version>${javaVersion}</java.version>
-    <maven.compiler.source>${javaVersion}</maven.compiler.source>
-    <maven.compiler.target>${javaVersion}</maven.compiler.target>
-  </properties>
-  ${isSnapshot ? `
-  <repositories>
-    <repository>
-      <id>snapshots</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>` : ''}
-
-  <dependencies>
-    <dependency>
-      <groupId>xyz.quartzframework</groupId>
-      <artifactId>quartz-${platform.toLowerCase()}-plugin-starter</artifactId>
-    </dependency>
-    ${dependencyXml}
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>${javaVersion}</source>
-          <target>${javaVersion}</target>
-          <compilerArgs>
-            <arg>-parameters</arg>
-          </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
-      </plugin>
-    </plugins>
-  </build>
-</project>`
-
-  const pluginYaml = `name: ${name}
-version: 1.0.0
-main: ${mainClass}`
-
-  const mainClassContent = `import xyz.quartzframework.core.QuartzApplication;
-import xyz.quartzframework.${platform.toLowerCase()}.${platform === 'SPIGOT' ? 'SpigotPlugin' : 'BungeePlugin'};
-import xyz.quartzframework.core.command.annotation.Command;
-import xyz.quartzframework.core.bean.annotation.Injectable;
-
-import java.util.concurrent.Callable;
-
-@QuartzApplication
-public class ${mainClass.split('.').pop()} extends ${platform === 'SPIGOT' ? 'SpigotPlugin' : 'BungeePlugin'} {
-  @Override
-  public void main() {
-    builder(this).build();
-  }
-
-  @Injectable
-  @Command(name = "ping")
-  public static class PingCommand implements Callable<String> {
-    @Override
-    public String call() {
-      return "Pong!";
+    if (!groupId || !artifactId || !name || !mainClass || !javaVersion || !platform || !compiler || !version || !dependencies || !platformApiVersion) {
+      return res.status(400).json({ error: 'Missing required fields.' });
     }
+
+    const isSnapshot = typeof version === 'string' && version.endsWith('-SNAPSHOT');
+    const zip = new JSZip();
+    const basePath = `${artifactId}/`;
+    const pluginYamlName = PlatformYaml[platform as Platform] || 'plugin.yml';
+    const packagePath = mainClass.substring(0, mainClass.lastIndexOf('.')).replace(/\./g, '/');
+    const className = mainClass.split('.').pop()!;
+    const platformApiDep = PlatformApiDependency[platform as Platform];
+
+    zip.file(`${basePath}pom.xml`, mavenXml(name, version, groupId, artifactId, javaVersion, isSnapshot, platform, platformApiDep, platformApiVersion, dependencies));
+    zip.file(`${basePath}src/main/resources/${pluginYamlName}`, pluginYaml(mainClass));
+    zip.file(`${basePath}src/main/java/${packagePath}/${className}.java`, mainClassContent(mainClass, platform, className));
+    zip.file(`${basePath}src/main/java/${packagePath}/PingCommand.java`, pingCommandContent(mainClass));
+
+    zip.file(`${basePath}.gitignore`, gitIgnore);
+    zip.file(`${basePath}.gitattributes`, gitAttributes);
+    zip.file(`${basePath}.mvn/wrapper/maven-wrapper.properties`, mavenWrapperProperties);
+
+    zip.file(`${basePath}README.md`, readme(name, dependencies));
+
+    zip.file(`${basePath}mvnw`, mvnw);
+    zip.file(`${basePath}mvnw.cmd`, mvnwCMD);
+
+    const content = await zip.generateAsync({
+      type: 'nodebuffer',
+      compression: 'DEFLATE',
+      streamFiles: true,
+      platform: 'UNIX',
+    });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${artifactId}.zip"`);
+    return res.status(200).send(content);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to generate project zip.' });
   }
-}`
-
-  // Adiciona arquivos usando caminhos diretos (sem zip.folder)
-  zip.file(`${basePath}pom.xml`, compiler === Compiler.MAVEN ? mavenXml : 'TODO: Gradle support')
-  zip.file(`${basePath}src/main/resources/${pluginYamlName}`, pluginYaml)
-  zip.file(`${basePath}src/main/java/${mainClass.replaceAll('.', '/')}.java`, mainClassContent)
-
-  const content = await zip.generateAsync({
-    type: 'nodebuffer',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 9 },
-    platform: 'UNIX',
-    streamFiles: true,
-  });
-
-  return new NextResponse(content, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="${artifactId}.zip"`,
-    },
-  })
 }
