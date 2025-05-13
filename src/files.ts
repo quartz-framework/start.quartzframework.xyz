@@ -127,11 +127,16 @@ export const mavenXml = (name: string, version: string, groupId: string, artifac
     <maven.compiler.target>${javaVersion}</maven.compiler.target>
   </properties>
   ${isSnapshot ? `\n  <repositories>
-    <repository>
-      <id>snapshots</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots><enabled>true</enabled></snapshots>
-    </repository>
+      <repository>
+        <id>sonatype-central</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+      </repository>
   </repositories>\n` : ''}
   <dependencies>
     <dependency>
