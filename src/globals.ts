@@ -26,10 +26,12 @@ export enum PlatformStarter {
 
 export enum Dependency {
     LOMBOK = 'LOMBOK',
+    QUARTZ_DATA_JPA = 'QUARTZ_DATA_JPA',
 }
 
 export enum DependencyName {
     LOMBOK = 'Lombok',
+    QUARTZ_DATA_JPA = 'Quartz Data JPA',
 }
 
 export enum Compiler {
@@ -48,10 +50,12 @@ export enum QuartzVersion {
 
 export const MavenDependency: Record<Dependency, { groupId: string; artifactId: string }> = {
     [Dependency.LOMBOK]: { groupId: 'org.projectlombok', artifactId: 'lombok' },
+    [Dependency.QUARTZ_DATA_JPA]: { groupId: 'xyz.quartzframework', artifactId: 'quartz-data-starter-jpa' },
 };
 
 export enum DependencyHelpLink {
-    LOMBOK = 'https://projectlombok.org'
+    LOMBOK = 'https://projectlombok.org',
+    QUARTZ_DATA_JPA = 'https://quartzframework.xyz',
 }
 
 export const PlatformApiDependency: Record<Platform, { groupId: string; artifactId: string }> = {

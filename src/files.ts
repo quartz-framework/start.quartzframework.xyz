@@ -189,7 +189,7 @@ export const readme = (name: string, dependencies: string[]) => {
     const deps = (dependencies as string[]).map(dep => {
         const depInfo = DependencyName[dep as Dependency];
         return `- [${depInfo}](${DependencyHelpLink[dep as Dependency]})`;
-    }).join('');
+    }).join('\n');
     return `# ${name}
 
 This plugin was generated using [Quartz Framework](https://quartzframework.xyz).
