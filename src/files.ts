@@ -1,4 +1,12 @@
-import {Dependency, DependencyHelpLink, DependencyName, MavenDependency, Platform, PlatformStarter} from "@/globals";
+import {
+    Dependency,
+    DependencyCategory,
+    DependencyHelpLink,
+    DependencyName,
+    MavenDependency,
+    Platform,
+    PlatformStarter
+} from "@/globals";
 
 export const gitIgnore = `target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -99,11 +107,17 @@ main: '${mainClass}'
 `;
 
 export const mavenXml = (name: string, version: string, groupId: string, artifactId: string, javaVersion: string, isSnapshot: boolean, platform: string, platformApiDep: { groupId: string, artifactId: string }, platformApiVersion: string, dependencies: string[]) => {
-    const dependencyXml = (dependencies as string[]).map(dep => {
-        const depInfo = MavenDependency[dep as Dependency];
-        return depInfo
-            ? `\n    <dependency>\n      <groupId>${depInfo.groupId}</groupId>\n      <artifactId>${depInfo.artifactId}</artifactId>\n    </dependency>`
-            : '';
+    const dependencyXml = dependencies.map(dep => {
+    const category = (Object.keys(MavenDependency) as DependencyCategory[]).find(cat =>
+        MavenDependency[cat]?.[dep as Dependency]
+    );
+
+    const depInfo = category ? MavenDependency[category][dep as Dependency] : undefined;
+    if (!depInfo) return '';
+
+    const optional = depInfo.optional ? `\n      <optional>true</optional>` : '';
+    const scope = depInfo.scope ? `\n      <scope>${depInfo.scope}</scope>` : '';
+    return `\n    <dependency>\n      <groupId>${depInfo.groupId}</groupId>\n      <artifactId>${depInfo.artifactId}</artifactId>${scope}${optional}\n    </dependency>`;
     }).join('');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"

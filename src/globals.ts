@@ -1,5 +1,5 @@
 export enum JavaVersion {
-    JAVA_11 = '11',
+    // JAVA_11 = '11',
     JAVA_17 = '17',
     JAVA_21 = '21',
 }
@@ -73,11 +73,17 @@ export enum QuartzVersion {
     "0.0.1-SNAPSHOT" = '0.0.1-SNAPSHOT',
 }
 
-export const MavenDependency: Partial<Record<DependencyCategory, Partial<Record<Dependency, { groupId: string; artifactId: string }>>>> = {
+export const MavenDependency: Record<DependencyCategory, Partial<Record<Dependency, {
+    groupId: string;
+    artifactId: string;
+    optional?: boolean;
+    scope?: "runtime" | "compile" | "provided" | "test";
+}>>> = {
     [DependencyCategory.DEVELOPMENT_TOOLS]: {
         [Dependency.LOMBOK]: {
             groupId: 'org.projectlombok',
             artifactId: 'lombok',
+            optional: true,
         },
     },
     [DependencyCategory.SQL]: {
@@ -88,24 +94,29 @@ export const MavenDependency: Partial<Record<DependencyCategory, Partial<Record<
         [Dependency.POSTGRESQL_DRIVER]: {
             groupId: 'org.postgresql',
             artifactId: 'postgresql',
+            scope: 'runtime',
         },
         [Dependency.SQL_SERVER_DRIVER]: {
             groupId: 'com.microsoft.sqlserver',
             artifactId: 'mssql-jdbc',
+            scope: 'runtime',
         },
         [Dependency.ORACLE_DATABASE_DRIVER]: {
             groupId: 'com.oracle.database.jdbc',
             artifactId: 'ojdbc11',
+            scope: 'runtime',
         },
         [Dependency.H2_DATABASE_DRIVER]: {
             groupId: 'com.h2database',
             artifactId: 'h2',
+            scope: 'runtime',
         },
         [Dependency.MYSQL_DRIVER]: {
             groupId: 'com.mysql',
             artifactId: 'mysql-connector-j',
+            scope: 'runtime',
         },
-    },
+    }
 };
 
 export enum DependencyHelpLink {
