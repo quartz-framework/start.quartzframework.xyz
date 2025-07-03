@@ -24,14 +24,39 @@ export enum PlatformStarter {
     BUNGEE = 'BungeePlugin',
 }
 
+export enum DependencyCategory {
+    DEVELOPMENT_TOOLS = 'DEVELOPMENT_TOOLS',
+    SQL = 'SQL',
+}
+
+export enum DependencyCategoryName {
+    DEVELOPMENT_TOOLS = 'Dev Tools',
+    SQL = 'SQL',
+}
+
 export enum Dependency {
     LOMBOK = 'LOMBOK',
+
     QUARTZ_DATA_JPA = 'QUARTZ_DATA_JPA',
+
+    POSTGRESQL_DRIVER = 'POSTGRESQL_DRIVER',
+    SQL_SERVER_DRIVER = 'SQL_SERVER_DRIVER',
+    ORACLE_DATABASE_DRIVER = 'ORACLE_DATABASE_DRIVER',
+    H2_DATABASE_DRIVER = 'H2_DATABASE_DRIVER',
+    MYSQL_DRIVER = 'MYSQL_DRIVER',
+
 }
 
 export enum DependencyName {
     LOMBOK = 'Lombok',
+
     QUARTZ_DATA_JPA = 'Quartz Data JPA',
+
+    POSTGRESQL_DRIVER = 'PostgreSQL Driver',
+    SQL_SERVER_DRIVER = 'SQL Server Driver',
+    ORACLE_DATABASE_DRIVER = 'Oracle JDBC Driver',
+    H2_DATABASE_DRIVER = 'H2 Database',
+    MYSQL_DRIVER = 'MySQL Driver',
 }
 
 export enum Compiler {
@@ -48,14 +73,50 @@ export enum QuartzVersion {
     "0.0.1-SNAPSHOT" = '0.0.1-SNAPSHOT',
 }
 
-export const MavenDependency: Record<Dependency, { groupId: string; artifactId: string }> = {
-    [Dependency.LOMBOK]: { groupId: 'org.projectlombok', artifactId: 'lombok' },
-    [Dependency.QUARTZ_DATA_JPA]: { groupId: 'xyz.quartzframework', artifactId: 'quartz-data-starter-jpa' },
+export const MavenDependency: Partial<Record<DependencyCategory, Partial<Record<Dependency, { groupId: string; artifactId: string }>>>> = {
+    [DependencyCategory.DEVELOPMENT_TOOLS]: {
+        [Dependency.LOMBOK]: {
+            groupId: 'org.projectlombok',
+            artifactId: 'lombok',
+        },
+    },
+    [DependencyCategory.SQL]: {
+        [Dependency.QUARTZ_DATA_JPA]: {
+            groupId: 'xyz.quartzframework',
+            artifactId: 'quartz-data-starter-jpa',
+        },
+        [Dependency.POSTGRESQL_DRIVER]: {
+            groupId: 'org.postgresql',
+            artifactId: 'postgresql',
+        },
+        [Dependency.SQL_SERVER_DRIVER]: {
+            groupId: 'com.microsoft.sqlserver',
+            artifactId: 'mssql-jdbc',
+        },
+        [Dependency.ORACLE_DATABASE_DRIVER]: {
+            groupId: 'com.oracle.database.jdbc',
+            artifactId: 'ojdbc11',
+        },
+        [Dependency.H2_DATABASE_DRIVER]: {
+            groupId: 'com.h2database',
+            artifactId: 'h2',
+        },
+        [Dependency.MYSQL_DRIVER]: {
+            groupId: 'com.mysql',
+            artifactId: 'mysql-connector-j',
+        },
+    },
 };
 
 export enum DependencyHelpLink {
     LOMBOK = 'https://projectlombok.org',
-    QUARTZ_DATA_JPA = 'https://quartzframework.xyz',
+    QUARTZ_DATA_JPA = 'https://quartzframework.xyz/docs/data',
+
+    POSTGRESQL_DRIVER = 'https://jdbc.postgresql.org',
+    SQL_SERVER_DRIVER = 'https://learn.microsoft.com/sql/connect/jdbc',
+    ORACLE_DATABASE_DRIVER = 'https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html',
+    H2_DATABASE_DRIVER = 'https://h2database.com',
+    MYSQL_DRIVER = 'https://dev.mysql.com/downloads/connector/j/',
 }
 
 export const PlatformApiDependency: Record<Platform, { groupId: string; artifactId: string }> = {
@@ -75,12 +136,12 @@ export const SupportedApiVersions: Record<Platform, string[]> = {
         '1.20.3-R0.1-SNAPSHOT',
         '1.20.2-R0.1-SNAPSHOT',
         '1.20.1-R0.1-SNAPSHOT',
-        '1.19.4-R0.1-SNAPSHOT',
-        '1.18.2-R0.1-SNAPSHOT',
+        // '1.19.4-R0.1-SNAPSHOT',
+        // '1.18.2-R0.1-SNAPSHOT',
     ],
     [Platform.BUNGEE]: [
-        '1.17-R0.1-SNAPSHOT',
-        '1.18-R0.1-SNAPSHOT',
+        // '1.17-R0.1-SNAPSHOT',
+        // '1.18-R0.1-SNAPSHOT',
         '1.19-R0.1-SNAPSHOT',
     ],
 };

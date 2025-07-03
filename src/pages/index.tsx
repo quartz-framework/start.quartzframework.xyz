@@ -5,9 +5,9 @@ import {Button} from '@/components/Button'
 import {Card} from '@/components/Card'
 import {
   Compiler, CompilerName,
-  Dependency,
+  Dependency, DependencyCategory, DependencyCategoryName,
   DependencyName,
-  JavaVersion,
+  JavaVersion, MavenDependency,
   Platform,
   PlatformName,
   QuartzVersion,
@@ -18,8 +18,6 @@ import {Input} from "@/components/Input";
 import {Label} from "@/components/Label";
 import {Separator} from "@/components/Separator";
 import {Layout} from "@/components/Layout";
-import {HeroBackground} from "@/components/HeroBackground";
-import Image from "next/image";
 import toast from "react-hot-toast";
 
 function toMainClass(groupId: string, artifactId: string, name: string): string {
@@ -35,7 +33,10 @@ function toMainClass(groupId: string, artifactId: string, name: string): string 
 export default function Home() {
   const [dependenciesModalOpen, setDependenciesModalOpen] = useState(false)
   const [mainClassManuallyEdited, setMainClassManuallyEdited] = useState(false)
-
+  const [openCategories, setOpenCategories] = useState<Record<DependencyCategory, boolean>>({
+    [DependencyCategory.DEVELOPMENT_TOOLS]: false,
+    [DependencyCategory.SQL]: false,
+  })
   const [form, setForm] = useState({
     groupId: 'com.example',
     artifactId: 'my-plugin',
@@ -147,23 +148,52 @@ export default function Home() {
               <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-xl w-full max-w-md">
                 <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Select dependencies</h2>
                 <div className="flex flex-wrap gap-2">
-                  {Object.values(Dependency).map(dep => {
-                    const selected = form.dependencies.has(dep)
-                    return (
-                        <button
-                            type="button"
-                            key={dep}
-                            onClick={() => toggleDependency(dep)}
-                            className={`px-3 py-1 rounded-full text-sm font-medium border transition ${
-                                selected
-                                    ? 'bg-sky-600 text-white border-sky-600'
-                                    : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
-                            }`}
-                        >
-                          {DependencyName[dep as Dependency]}
-                        </button>
-                    )
-                  })}
+                  <div className="space-y-4">
+                    {Object.values(DependencyCategory).map(category => {
+                      const depsInCategory = MavenDependency[category];
+                      const categoryName = DependencyCategoryName[category];
+                      const isOpen = openCategories[category];
+
+                      return (
+                          <div key={category} className="border rounded-lg">
+                            <button
+                                onClick={() =>
+                                    setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }))
+                                }
+                                className={`w-full flex justify-between items-center px-4 py-2 text-left font-semibold
+    ${isOpen ? 'bg-slate-200 dark:bg-slate-700' : 'bg-slate-100 dark:bg-slate-800'}
+    hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors rounded-md`}
+                            >
+                              <span>{categoryName}</span>
+                              <span className="text-xl leading-none">{isOpen ? '−' : '+'}</span>
+                            </button>
+                            <div className={`transition-all duration-300 overflow-hidden ${
+                                isOpen ? 'max-h-[300px] py-2' : 'max-h-0 py-0'
+                            }`}>
+                              <div className="flex flex-wrap gap-2 px-4">
+                                {Object.keys(depsInCategory ?? {}).map(dep => {
+                                  const selected = form.dependencies.has(dep as Dependency)
+                                  return (
+                                      <button
+                                          type="button"
+                                          key={dep}
+                                          onClick={() => toggleDependency(dep as Dependency)}
+                                          className={`px-3 py-1 rounded-full text-sm font-medium border transition ${
+                                              selected
+                                                  ? 'bg-sky-600 text-white border-sky-600'
+                                                  : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                          }`}
+                                      >
+                                        {DependencyName[dep as Dependency]}
+                                      </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="flex justify-between mt-6">
                   <Button
@@ -179,14 +209,14 @@ export default function Home() {
               </div>
             </div>
         )}
-        <main className="mx-auto w-full max-w-xl flex justify-center items-center px-4">
+        <main className="mx-auto w-full max-w-xl px-4 py-16 sm:py-24">
           <Card>
             <CardContent>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="name">Plugin Name</Label>
                 <Input name="name" value={form.name} onChange={handleChange} />
               </div>
-              <div className="grid grid-cols-2 gap-x-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="groupId">Group ID</Label>
                   <Input name="groupId" value={form.groupId} onChange={handleChange} />
@@ -274,7 +304,7 @@ export default function Home() {
                 <Button onClick={() => setDependenciesModalOpen(true)}>
                   Dependencies ({form.dependencies.size})
                 </Button>
-               <div className="flex gap-x-2">
+                <div className="flex justify-between items-center pt-4 gap-x-2">
                  <Button onClick={handleSubmit}>Generate Project</Button>
                  <Button
                      variant="secondary"
@@ -298,32 +328,6 @@ export default function Home() {
             </CardContent>
           </Card>
         </main>
-        <div
-            className="absolute inset-0 overflow-hidden pointer-events-none -z-10"
-            aria-hidden="true"
-        >
-          <div className="absolute inset-x-0 -top-32 -bottom-48 mask-[linear-gradient(transparent,white,white)] dark:mask-[linear-gradient(transparent,white,transparent)] lg:mask-none lg:dark:mask-[linear-gradient(white,white,transparent)]">
-            <HeroBackground className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-0 lg:translate-x-0 lg:translate-y-[-60%]" />
-          </div>
-          <Image
-              className="absolute -top-64 -right-64"
-              src={'blur-cyan.png'}
-              alt=""
-              width={530}
-              height={530}
-              unoptimized
-              priority
-          />
-          <Image
-              className="absolute -right-44 -bottom-40"
-              src={'blur-indigo.png'}
-              alt=""
-              width={567}
-              height={567}
-              unoptimized
-              priority
-          />
-        </div>
       </Layout>
   )
 }
