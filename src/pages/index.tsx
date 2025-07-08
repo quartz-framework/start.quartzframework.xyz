@@ -5,7 +5,7 @@ import {Button} from '@/components/Button'
 import {Card} from '@/components/Card'
 import {
   Compiler, CompilerName,
-  Dependency, DependencyCategory, DependencyCategoryName,
+  Dependency, DependencyCategory, DependencyCategoryName, DependencyMetadata,
   DependencyName,
   JavaVersion, MavenDependency,
   Platform,
@@ -76,12 +76,25 @@ export default function Home() {
   }
 
   const toggleDependency = (dep: Dependency) => {
+    const meta = DependencyMetadata[dep];
+    const depends = meta?.depends ?? [];
+    const missingDeps = depends.filter(d => !form.dependencies.has(d));
+    if (missingDeps.length > 0) return;
     setForm(prev => {
-      const newDeps = new Set(prev.dependencies)
-      newDeps.has(dep) ? newDeps.delete(dep) : newDeps.add(dep)
-      return { ...prev, dependencies: newDeps }
-    })
-  }
+      const newDeps = new Set(prev.dependencies);
+      if (newDeps.has(dep)) {
+        newDeps.delete(dep);
+        for (const [otherDep, otherMeta] of Object.entries(DependencyMetadata)) {
+          if ((otherMeta?.depends ?? []).includes(dep)) {
+            newDeps.delete(otherDep as Dependency);
+          }
+        }
+      } else {
+        newDeps.add(dep);
+      }
+      return { ...prev, dependencies: newDeps };
+    });
+  };
 
   const handleSubmit = async () => {
     const res = await fetch('/api/generate', {
@@ -172,19 +185,38 @@ export default function Home() {
                             }`}>
                               <div className="flex flex-wrap gap-2 px-4">
                                 {Object.keys(depsInCategory ?? {}).map(dep => {
-                                  const selected = form.dependencies.has(dep as Dependency)
+                                  const dependency = dep as Dependency;
+                                  const selected = form.dependencies.has(dependency);
+                                  const meta = DependencyMetadata[dependency];
+                                  const requiredDeps = meta?.depends ?? [];
+                                  const allowedPlatforms = meta?.allowedPlatforms ?? [form.platform];
+                                  const missingDeps = requiredDeps.filter(d => !form.dependencies.has(d));
+                                  const disabled = missingDeps.length > 0 || !allowedPlatforms.includes(form.platform);
+
+                                  const disabledReason = !allowedPlatforms.includes(form.platform)
+                                      ? 'Unavailable for this platform'
+                                      : missingDeps.length > 0
+                                          ? `Requires: ${missingDeps.map(d => DependencyName[d]).join(', ')}`
+                                          : undefined;
+
                                   return (
                                       <button
                                           type="button"
-                                          key={dep}
-                                          onClick={() => toggleDependency(dep as Dependency)}
-                                          className={`px-3 py-1 rounded-full text-sm font-medium border transition ${
-                                              selected
-                                                  ? 'bg-sky-600 text-white border-sky-600'
+                                          key={dependency}
+                                          onClick={() => toggleDependency(dependency)}
+                                          disabled={disabled}
+                                          title={disabledReason}
+                                          className={`
+      px-3 py-1 rounded-full text-sm font-medium border transition 
+      ${selected
+                                              ? 'bg-sky-600 text-white border-sky-600'
+                                              : disabled
+                                                  ? 'bg-gray-300 text-gray-500 border-gray-400 dark:bg-slate-700 dark:text-slate-500 dark:border-slate-600 cursor-not-allowed opacity-60'
                                                   : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
-                                          }`}
+                                          }
+    `}
                                       >
-                                        {DependencyName[dep as Dependency]}
+                                        {DependencyName[dependency]}
                                       </button>
                                   )
                                 })}

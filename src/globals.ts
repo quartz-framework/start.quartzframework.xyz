@@ -27,11 +27,13 @@ export enum PlatformStarter {
 export enum DependencyCategory {
     DEVELOPMENT_TOOLS = 'DEVELOPMENT_TOOLS',
     SQL = 'SQL',
+    UTILITY = 'UTILITY',
 }
 
 export enum DependencyCategoryName {
-    DEVELOPMENT_TOOLS = 'Dev Tools',
+    DEVELOPMENT_TOOLS = 'Development Tools',
     SQL = 'SQL',
+    UTILITY = 'Utility',
 }
 
 export enum Dependency {
@@ -45,7 +47,39 @@ export enum Dependency {
     H2_DATABASE_DRIVER = 'H2_DATABASE_DRIVER',
     MYSQL_DRIVER = 'MYSQL_DRIVER',
 
+    FLYWAY = 'FLYWAY',
+
+    MINE_DOWN = 'MINE_DOWN',
+
 }
+
+export const DependencyMetadata: Partial<Record<Dependency, {
+    allowedPlatforms?: Platform[];
+    depends?: Dependency[];
+}>> = {
+    [Dependency.QUARTZ_DATA_JPA]: {
+
+    },
+
+    [Dependency.POSTGRESQL_DRIVER]: {
+        depends: [Dependency.QUARTZ_DATA_JPA],
+    },
+    [Dependency.MYSQL_DRIVER]: {
+        depends: [Dependency.QUARTZ_DATA_JPA],
+    },
+    [Dependency.SQL_SERVER_DRIVER]: {
+        depends: [Dependency.QUARTZ_DATA_JPA],
+    },
+    [Dependency.ORACLE_DATABASE_DRIVER]: {
+        depends: [Dependency.QUARTZ_DATA_JPA],
+    },
+    [Dependency.H2_DATABASE_DRIVER]: {
+        depends: [Dependency.QUARTZ_DATA_JPA],
+    },
+    [Dependency.MINE_DOWN]: {
+        allowedPlatforms: [Platform.SPIGOT, Platform.BUNGEE],
+    },
+};
 
 export enum DependencyName {
     LOMBOK = 'Lombok',
@@ -57,6 +91,10 @@ export enum DependencyName {
     ORACLE_DATABASE_DRIVER = 'Oracle JDBC Driver',
     H2_DATABASE_DRIVER = 'H2 Database',
     MYSQL_DRIVER = 'MySQL Driver',
+
+    FLYWAY = 'Flyway',
+
+    MINE_DOWN = 'MineDown',
 }
 
 export enum Compiler {
@@ -116,7 +154,18 @@ export const MavenDependency: Record<DependencyCategory, Partial<Record<Dependen
             artifactId: 'mysql-connector-j',
             scope: 'runtime',
         },
-    }
+        [Dependency.FLYWAY]: {
+            groupId: 'org.flywaydb',
+            artifactId: 'flyway-core',
+        },
+    },
+    [DependencyCategory.UTILITY]: {
+        [Dependency.MINE_DOWN]: {
+            groupId: 'de.themoep',
+            artifactId: 'minedown',
+            scope: 'compile',
+        },
+    },
 };
 
 export enum DependencyHelpLink {
@@ -128,6 +177,10 @@ export enum DependencyHelpLink {
     ORACLE_DATABASE_DRIVER = 'https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html',
     H2_DATABASE_DRIVER = 'https://h2database.com',
     MYSQL_DRIVER = 'https://dev.mysql.com/downloads/connector/j/',
+
+    FLYWAY = 'https://documentation.red-gate.com/fd/api-java-277579358.html',
+
+    MINE_DOWN = 'https://wiki.phoenix616.dev/library/minedown/start'
 }
 
 export const PlatformApiDependency: Record<Platform, { groupId: string; artifactId: string }> = {
