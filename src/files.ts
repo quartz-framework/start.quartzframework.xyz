@@ -126,7 +126,7 @@ export const mavenXml = (name: string, version: string, groupId: string, artifac
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>xyz.quartzframework</groupId>
-    <artifactId>quartz-parent</artifactId>
+    <artifactId>quartz-starter-parent</artifactId>
     <version>${version}</version>
     <relativePath/>
   </parent>
