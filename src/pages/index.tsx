@@ -36,6 +36,7 @@ export default function Home() {
   const [openCategories, setOpenCategories] = useState<Record<DependencyCategory, boolean>>({
     [DependencyCategory.DEVELOPMENT_TOOLS]: false,
     [DependencyCategory.SQL]: false,
+    [DependencyCategory.UTILITY]: false,
   })
   const [form, setForm] = useState({
     groupId: 'com.example',
