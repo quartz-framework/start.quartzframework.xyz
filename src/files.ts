@@ -126,7 +126,7 @@ export const mavenXml = (name: string, version: string, groupId: string, artifac
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>xyz.quartzframework</groupId>
-    <artifactId>quartz-starter-parent</artifactId>
+    <artifactId>quartz-parent</artifactId>
     <version>${version}</version>
     <relativePath/>
   </parent>
@@ -155,7 +155,11 @@ export const mavenXml = (name: string, version: string, groupId: string, artifac
   <dependencies>
     <dependency>
       <groupId>xyz.quartzframework</groupId>
-      <artifactId>quartz-${platform.toLowerCase()}-plugin-starter</artifactId>
+      <artifactId>quartz-starter=</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xyz.quartzframework</groupId>
+      <artifactId>quartz-starter-${platform.toLowerCase()}-plugin</artifactId>
     </dependency>
     <dependency>
       <groupId>${platformApiDep.groupId}</groupId>

@@ -46,7 +46,7 @@ export default function Home() {
     javaVersion: JavaVersion.JAVA_17,
     platform: Platform.SPIGOT,
     platformApiVersion: SupportedApiVersions[Platform.SPIGOT][0],
-    version: QuartzVersion["0.0.1-SNAPSHOT"],
+    version: QuartzVersion["0.1.0-SNAPSHOT"],
     dependencies: new Set<Dependency>(),
     compiler: Compiler.MAVEN,
   })
@@ -78,21 +78,37 @@ export default function Home() {
 
   const toggleDependency = (dep: Dependency) => {
     const meta = DependencyMetadata[dep];
-    const depends = meta?.depends ?? [];
-    const missingDeps = depends.filter(d => !form.dependencies.has(d));
-    if (missingDeps.length > 0) return;
+    const dependsIn = meta?.depends ?? []; // `dependsIn` style
+    const allowedPlatforms = meta?.allowedPlatforms ?? [form.platform];
+    const hasPlatformSupport = allowedPlatforms.includes(form.platform);
+    const hasSomeDep = dependsIn.length === 0 || dependsIn.some(d => form.dependencies.has(d));
+
+    if (!hasSomeDep || !hasPlatformSupport) return;
+
     setForm(prev => {
       const newDeps = new Set(prev.dependencies);
+
       if (newDeps.has(dep)) {
         newDeps.delete(dep);
         for (const [otherDep, otherMeta] of Object.entries(DependencyMetadata)) {
-          if ((otherMeta?.depends ?? []).includes(dep)) {
+          const otherDepends = otherMeta?.depends ?? [];
+          const stillRequired = otherDepends.includes(dep) &&
+              Array.from(newDeps).includes(otherDep as Dependency);
+          if (stillRequired) {
+            return prev;
+          }
+        }
+        for (const [otherDep, otherMeta] of Object.entries(DependencyMetadata)) {
+          const otherDepends = otherMeta?.depends ?? [];
+          if (otherDepends.includes(dep)) {
             newDeps.delete(otherDep as Dependency);
           }
         }
+
       } else {
         newDeps.add(dep);
       }
+
       return { ...prev, dependencies: newDeps };
     });
   };
@@ -189,16 +205,24 @@ export default function Home() {
                                   const dependency = dep as Dependency;
                                   const selected = form.dependencies.has(dependency);
                                   const meta = DependencyMetadata[dependency];
-                                  const requiredDeps = meta?.depends ?? [];
                                   const allowedPlatforms = meta?.allowedPlatforms ?? [form.platform];
-                                  const missingDeps = requiredDeps.filter(d => !form.dependencies.has(d));
-                                  const disabled = missingDeps.length > 0 || !allowedPlatforms.includes(form.platform);
+                                  const depends = meta?.depends ?? [];
+                                  const dependsIn = meta?.dependsIn ?? [];
 
-                                  const disabledReason = !allowedPlatforms.includes(form.platform)
-                                      ? 'Unavailable for this platform'
-                                      : missingDeps.length > 0
-                                          ? `Requires: ${missingDeps.map(d => DependencyName[d]).join(', ')}`
-                                          : undefined;
+                                  const hasAllDepends = depends.every(d => form.dependencies.has(d));
+                                  const hasSomeDependsIn = dependsIn.length === 0 || dependsIn.some(d => form.dependencies.has(d));
+                                  const allowed = allowedPlatforms.includes(form.platform);
+
+                                  const disabled = !allowed || !hasAllDepends || !hasSomeDependsIn;
+
+                                  let disabledReason: string | undefined;
+                                  if (!allowed) {
+                                    disabledReason = 'Unavailable for this platform';
+                                  } else if (!hasAllDepends) {
+                                    disabledReason = `Requires: ${depends.map(d => DependencyName[d]).join(', ')}`;
+                                  } else if (!hasSomeDependsIn) {
+                                    disabledReason = `Requires one of: ${dependsIn.map(d => DependencyName[d]).join(', ')}`;
+                                  }
 
                                   return (
                                       <button
@@ -242,12 +266,27 @@ export default function Home() {
               </div>
             </div>
         )}
-        <main className="mx-auto w-full max-w-xl px-4 py-16 sm:py-24">
+        <main className="flex flex-1 items-center justify-center">
           <Card>
             <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="name">Plugin Name</Label>
-                <Input name="name" value={form.name} onChange={handleChange} />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="version">Quartz Version</Label>
+                  <select
+                      name="version"
+                      value={form.version}
+                      onChange={handleChange}
+                      className="w-full rounded border px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-sm"
+                  >
+                    {Object.values(QuartzVersion).map(v => (
+                        <option key={v} value={v}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Plugin Name</Label>
+                  <Input name="name" value={form.name} onChange={handleChange} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -263,7 +302,7 @@ export default function Home() {
                 <Label htmlFor="mainClass">Main Class</Label>
                 <Input name="mainClass" value={form.mainClass} onChange={handleMainClassChange} />
               </div>
-              <div className="grid grid-cols-3 gap-x-2">
+              <div className="grid grid-cols-2 gap-x-2">
                 <div>
                   <Label htmlFor="javaVersion">Java Version</Label>
                   <select
@@ -287,19 +326,6 @@ export default function Home() {
                   >
                     {Object.values(Compiler).map(v => (
                         <option value={v}>{CompilerName[v]}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="version">Quartz Version</Label>
-                  <select
-                      name="version"
-                      value={form.version}
-                      onChange={handleChange}
-                      className="w-full rounded border px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-sm"
-                  >
-                    {Object.values(QuartzVersion).map(v => (
-                        <option key={v} value={v}>{v}</option>
                     ))}
                   </select>
                 </div>
@@ -333,30 +359,30 @@ export default function Home() {
                 </div>
               </div>
               <Separator />
-              <div className="flex justify-between">
-                <Button onClick={() => setDependenciesModalOpen(true)}>
+              <div className="flex justify-between w-full">
+                <Button className="w-full" onClick={() => setDependenciesModalOpen(true)}>
                   Dependencies ({form.dependencies.size})
                 </Button>
-                <div className="flex justify-between items-center pt-4 gap-x-2">
-                 <Button onClick={handleSubmit}>Generate Project</Button>
-                 <Button
-                     variant="secondary"
-                     onClick={() => {
-                       const url = new URL(window.location.href)
-                       for (const [key, value] of Object.entries(form)) {
-                         if (key === "dependencies") {
-                           url.searchParams.set("dependencies", Array.from(value as Set<string>).join(","))
-                         } else {
-                           url.searchParams.set(key, value as string)
-                         }
-                       }
-                       navigator.clipboard.writeText(url.toString())
-                       toast.success("Link copied to clipboard!")
-                     }}
-                 >
-                   Share
-                 </Button>
-               </div>
+              </div>
+              <div className="flex flex-wrap justify-between items-center pt-4 gap-2">
+                <Button onClick={handleSubmit}>Generate Project</Button>
+                <Button
+                    variant="secondary"
+                    onClick={() => {
+                      const url = new URL(window.location.href)
+                      for (const [key, value] of Object.entries(form)) {
+                        if (key === "dependencies") {
+                          url.searchParams.set("dependencies", Array.from(value as Set<string>).join(","))
+                        } else {
+                          url.searchParams.set(key, value as string)
+                        }
+                      }
+                      navigator.clipboard.writeText(url.toString())
+                      toast.success("Link copied to clipboard!")
+                    }}
+                >
+                  Share
+                </Button>
               </div>
             </CardContent>
           </Card>

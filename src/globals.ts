@@ -56,9 +56,14 @@ export enum Dependency {
 export const DependencyMetadata: Partial<Record<Dependency, {
     allowedPlatforms?: Platform[];
     depends?: Dependency[];
+    dependsIn?: Dependency[];
 }>> = {
     [Dependency.QUARTZ_DATA_JPA]: {
 
+    },
+
+    [Dependency.FLYWAY]: {
+        dependsIn: [Dependency.POSTGRESQL_DRIVER, Dependency.MYSQL_DRIVER, Dependency.H2_DATABASE_DRIVER, Dependency.ORACLE_DATABASE_DRIVER, Dependency.SQL_SERVER_DRIVER],
     },
 
     [Dependency.POSTGRESQL_DRIVER]: {
@@ -108,7 +113,7 @@ export enum CompilerName {
 }
 
 export enum QuartzVersion {
-    "0.0.1-SNAPSHOT" = '0.0.1-SNAPSHOT',
+    "0.1.0-SNAPSHOT" = '0.1.0-SNAPSHOT',
 }
 
 export const MavenDependency: Record<DependencyCategory, Partial<Record<Dependency, {
@@ -127,7 +132,7 @@ export const MavenDependency: Record<DependencyCategory, Partial<Record<Dependen
     [DependencyCategory.SQL]: {
         [Dependency.QUARTZ_DATA_JPA]: {
             groupId: 'xyz.quartzframework',
-            artifactId: 'quartz-data-starter-jpa',
+            artifactId: 'quartz-starter-data-jpa',
         },
         [Dependency.POSTGRESQL_DRIVER]: {
             groupId: 'org.postgresql',
