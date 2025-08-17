@@ -155,7 +155,7 @@ export const mavenXml = (name: string, version: string, groupId: string, artifac
   <dependencies>
     <dependency>
       <groupId>xyz.quartzframework</groupId>
-      <artifactId>quartz-starter=</artifactId>
+      <artifactId>quartz-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>xyz.quartzframework</groupId>
