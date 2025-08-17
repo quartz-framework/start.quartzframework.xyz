@@ -70,7 +70,7 @@ distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-mav
 export const pingCommandContent = (mainClass: string) => `package ${mainClass.substring(0, mainClass.lastIndexOf('.'))};
     
 import picocli.CommandLine.*;
-import xyz.quartzframework.core.bean.annotation.Injectable;
+import xyz.quartzframework.Injectable;
 import java.util.concurrent.Callable;
 
 @Injectable
@@ -87,10 +87,10 @@ public class PingCommand implements Callable<String> {
 export const mainClassContent = (mainClass: string, platform: string, className: string = 'Main') => {
     return `package ${mainClass.substring(0, mainClass.lastIndexOf('.'))};
     
-import xyz.quartzframework.core.QuartzApplication;
+import xyz.quartzframework.QuartzPlugin;
 import xyz.quartzframework.${platform.toLowerCase()}.${PlatformStarter[platform as Platform]};
 
-@QuartzApplication
+@QuartzPlugin
 public class ${className} extends ${PlatformStarter[platform as Platform]} {
 
   @Override
