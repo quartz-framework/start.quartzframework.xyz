@@ -175,7 +175,7 @@ export const MavenDependency: Record<DependencyCategory, Partial<Record<Dependen
 
 export enum DependencyHelpLink {
     LOMBOK = 'https://projectlombok.org',
-    QUARTZ_DATA_JPA = 'https://quartzframework.xyz/docs/data',
+    QUARTZ_DATA_JPA = 'https://quartzframework.xyz/docs/data/jpa',
 
     POSTGRESQL_DRIVER = 'https://jdbc.postgresql.org',
     SQL_SERVER_DRIVER = 'https://learn.microsoft.com/sql/connect/jdbc',

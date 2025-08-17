@@ -27,7 +27,7 @@ function toMainClass(groupId: string, artifactId: string, name: string): string 
       .split(' ')
       .map(w => w.charAt(0).toUpperCase() + w.slice(1))
       .join('')
-  return `${groupId}.${sanitizedArtifact}.${sanitizedName}`
+  return `${groupId}.${sanitizedArtifact}.${sanitizedName}Application`
 }
 
 export default function Home() {
@@ -42,7 +42,7 @@ export default function Home() {
     groupId: 'com.example',
     artifactId: 'my-plugin',
     name: 'MyPlugin',
-    mainClass: 'com.example.myplugin.MyPlugin',
+    mainClass: 'com.example.myplugin.MyPluginApplication',
     javaVersion: JavaVersion.JAVA_17,
     platform: Platform.SPIGOT,
     platformApiVersion: SupportedApiVersions[Platform.SPIGOT][0],
@@ -297,10 +297,6 @@ export default function Home() {
                   <Label htmlFor="artifactId">Artifact ID</Label>
                   <Input name="artifactId" value={form.artifactId} onChange={handleChange} />
                 </div>
-              </div>
-              <div>
-                <Label htmlFor="mainClass">Main Class</Label>
-                <Input name="mainClass" value={form.mainClass} onChange={handleMainClassChange} />
               </div>
               <div className="grid grid-cols-2 gap-x-2">
                 <div>
